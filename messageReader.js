@@ -1,3 +1,251 @@
+// COMMUNIQUE
+// A P2P MESSAGING PROGRAM
+// © 2020 NDH LTD.
+// CREATED BY NICHOLAS BERNHARD
+
+/*
+
+FINISH RANGE SETTINGS
+
+WRITE FUNCTION FOR CHECKING NEW MESSAGES.
+
+*/
+
+const messageFolder = "./messages/";
+const fs = require('fs');
+const readline = require("readline");
+let rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+let masterUsername = fs.readFileSync("username.txt", "utf-8");
+
+function setUpUsername() {
+    console.log(
+        "\n" +
+        "WELCOME TO COMMUNIQUE." +
+        "\n" +
+        "\n" +
+        "YOU HAVE NOT SET UP A USERNAME." +
+        "\n" +
+        "\n" +
+        "A USERNAME IS REQUIRED FOR COMMUNIQUE TO WORK PROPERLY." +
+        "\n"
+    );
+    rl.question("PLEASE ENTER A USERNAME NOW: ",
+        function (inputForUsername) {
+            if ((inputForUsername === "")) {
+                console.log("USERNAME CANNOT BE BLANK.");
+                setUpUsername();
+            } else if (inputForUsername.includes("_")) {
+                console.log("USERNAME CANNOT INCLUDE AN UNDERSCORE ('_').");
+                setUpUsername();
+            } else {
+                fs.writeFile(
+                    "username.txt", inputForUsername,
+                    function (err) {
+                        if (err) throw err;
+                    }
+                );
+                console.log(
+                    "\n" +
+                    "YOU HAVE SET YOUR USERNAME AS " +
+                    inputForUsername + "." +
+                    "\n" +
+                    "YOU MAY CHANGE IT WITH THE COMMAND 'SET USERNAME', " +
+                    "\n" +
+                    "BUT PLEASE NOTE FUTURE CHANGES MAY IMPAIR " +
+                    "FUNCTIONALITY." +
+                    "\n" +
+                    "BETTER TO CHANGE IT NOW, RATHER THAN LATER. " +
+                    "\n" +
+                    "\n"
+                );
+                rl.question("PRESS 'ENTER' OR 'RETURN' TO RESTART " +
+                    "COMMUNIQUE.",
+                    function (enter) {
+                        startupWelcome();
+                        setTimeout(decisionTree, 1000);
+                    });
+            }
+        });
+}
+
+if (masterUsername === "") {
+    setUpUsername();
+} else {
+    startupWelcome();
+    setTimeout(decisionTree, 1000);
+}
+
+function listContacts() {
+    fs.readdir(messageFolder, (err, files) => {
+        console.log(
+            "\n" +
+            "HERE ARE THE CONTACTS IN YOUR FOLDER: " +
+            "\n"
+        );
+        files.forEach(function (directory) {
+            let justContactName = directory.replace("_", "");
+            justContactName = justContactName.replace(masterUsername, "");
+            console.log(justContactName);
+        });
+        decisionTree();
+    });
+}
+
+function startupWelcome() {
+    console.log(
+        "\n" +
+        "WELCOME TO COMMUNIQUE." +
+        "\n" +
+        " ====  ====  =====  =====  |  |  |   |  ===  ====  |  |  === " +
+        "\n" +
+        " ||    |  |  | | |  | | |  |  |  |\\  |   |   |  |  |  |  |   " +
+        "\n" +
+        " ||    |  |  | | |  | | |  |  |  | \\ |   |   |  |  |  |  --- " +
+        "\n" +
+        " ||    |  |  | | |  | | |  |  |  |  \\|   |   | \\|  |  |  |   " +
+        "\n" +
+        " ====  ====  |   |  |   |  ====  |   |  ===  ====  ====  === " +
+        "\n" +
+        "                                                 \\"
+    );
+}
+
+function aboutCommunique() {
+    console.log(
+        "\n" +
+        "COMMUNIQUE" + "\n" +
+        "\n" +
+        "A MESSAGING TOOL FOR P2P FILE-SYNC PROGRAMS." + "\n" +
+        "\u00A9 2020 NDH LTD." + "\n" +
+        "CREATED BY NICHOLAS BERNHARD" + "\n" +
+        "\n"
+    );
+    decisionTree();
+}
+
+function howToUseCommunique() {
+    console.log("nothing yet!");
+}
+
+function communiqueHelp() {
+    console.log(
+        "HELP TOPICS:" + "\n"
+    );
+    let helpTopics = [
+        "COMMANDS", "SEARCH", "HOW TO USE", "OTHER STUFF", "BACK"
+    ];
+    helpTopics.forEach(function (item) {
+        console.log(item);
+    });
+    rl.question(
+        "\n" +
+        "WHAT WOULD YOU LIKE HELP WITH? ",
+        function (response) {
+            response = response.toLowerCase().trim();
+            switch (true) {
+                case response === "commands":
+                    showCommands("fromHelp");
+                    break;
+                case response === "other stuff":
+                    console.log('nothing to show yet');
+                    decisionTree();
+                case response === "back":
+                    decisionTree();
+                default:
+                    console.log("INPUT NOT RECOGNIZED.");
+                    decisionTree();
+            }
+        }
+    )
+}
+
+function addSignature(yesOrNo, returnToMenu) {
+    yesOrNo = yesOrNo.toLowerCase();
+    if ((yesOrNo !== "yes") && (yesOrNo !== "no")) {
+        console.log("VALUE CAN EITHER BE 'ON' OR 'OFF'");
+        decisionTree();
+    } else {
+        fs.writeFile(
+            "signatureStatus.txt", yesOrNo,
+            function (err) {
+                if (err) throw err;
+            }
+        );
+        if (yesOrNo === "yes") {
+            console.log(
+                "\n" +
+                "SIGNATURE WILL BE ADDED TO MESSAGES."
+            );
+        } else if (yesOrNo === "no") {
+            console.log(
+                "\n" +
+                "SIGNATURE WILL NO LONGER BE ADDED TO MESSAGES."
+            );
+        }
+        if (returnToMenu === "returnToMenu") {
+            decisionTree();
+        }
+    }
+}
+
+function signatureEditor() {
+    rl.question(
+        "\n" +
+        "CREATE SIGNATURE, OR TYPE 'MENU' TO CANCEL: ",
+        function (signature) {
+            if (signature === "menu") {
+                decisionTree();
+            } else {
+                fs.writeFile(
+                    "messageSignature.txt", signature,
+                    function (err) {
+                        if (err) throw err;
+                    }
+                );
+                console.log(
+                    "\n" +
+                    "\n" +
+                    "SIGNATURE CREATED."
+                );
+                rl.question(
+                    "\n" +
+                    "ADD SIGNATURE AUTOMATICALLY (YES OR NO)? ",
+                    function (yesOrNo) {
+                        addSignature(yesOrNo);
+                        setTimeout(function () {
+                            showSignature();
+                            // This will go back to decisionTree
+                        }, 500);
+                    });
+            }
+        });
+}
+
+function showSignature() {
+    if (!fs.existsSync("messageSignature.txt")) {
+        console.log(
+            "\n" +
+            "NO SIGNATURE HAS BEEN SET UP."
+        );
+    } else {
+        let readSignatureBack = fs.readFileSync(
+            "messageSignature.txt", "utf8"
+        );
+        console.log(
+            "\n" +
+            "\n" +
+            "YOUR MESSAGE SIGNATURE:" + "\n" +
+            "\n" +
+            readSignatureBack + "\n"
+        );
+    }
+    decisionTree();
+}
+
 function newMessage(messageRecipient) {
     fs.readdir(messageFolder, (err, files) => {
         function loopFiles(file, fileIndex) {
@@ -224,4 +472,367 @@ function searchMessages(toOrFrom, target, range, rangeTwo) {
 
         let sf = "";
 
-        i
+        if (toOrFrom === "to") {
+            sf = "from_" + un;
+        } else if (toOrFrom === "from") {
+            sf = "from_" + target;
+        } else {
+            console.log("SOMETHING WENT WRONG IN DETERMINING WHETHER " +
+                "TO LOOK IN 'TO' OR 'FROM' SUB-FOLDER.");
+        }
+
+        if (fs.existsSync(messageFolder + folderToSearch + "/" +
+                sf + "/")) {
+            subFolderToSearch = sf;
+            applyRange();
+        } else {
+            console.log(
+                "\n" +
+                "COMMUNIQUE LOOKED FOR A FOLDER NAMED '" +
+                sf + "', BUT COULD NOT FIND IT."
+            );
+            decisionTree();
+        }
+    }
+
+    function checkSearchTarget() {
+        fs.readdir(messageFolder, (err, files) => {
+            let listOfContacts = [];
+            files.forEach(function (directory) {
+                let cn = directory.replace("_", "");
+                cn = cn.replace(masterUsername, "");
+                listOfContacts.push(cn);
+            });
+            if (!listOfContacts.includes(target)) {
+                console.log(
+                    "'" + target + "' WAS NOT FOUND IN YOUR CONTACTS." +
+                    "\n"
+                );
+                rl.question("ENTER A NEW CONTACT, " +
+                    "\n" +
+                    "OR TYPE 'BACK' TO RETURN TO MENU: ",
+                    function (response) {
+                        if (response.toLowerCase() === "back") {
+                            decisionTree();
+                        } else {
+                            searchMessages(
+                                toOrFrom, response, range, rangeTwo
+                            );
+                        }
+                    });
+            } else {
+                folderToSearch = files[listOfContacts.indexOf(target)];
+                checkForSubFolder();
+            }
+
+        });
+    }
+
+    function checkToOrFrom() {
+        toOrFrom = toOrFrom.toLowerCase();
+        if ((toOrFrom !== "to") && (toOrFrom !== "from")) {
+            function askToOrFromAgain() {
+                rl.question(
+                    "\n" +
+                    "ARE YOU SEARCHING FOR MESSAGES TO SOMEONE, " +
+                    "OR FROM SOMEONE (TO/FROM)? ",
+                    function (replyToToOrFrom) {
+                        replyToToOrFrom = replyToToOrFrom.toLowerCase();
+                        if ((replyToToOrFrom !== "to") &&
+                            (replyToToOrFrom !== "from")) {
+                            askToOrFromAgain();
+                        } else {
+                            searchMessages(
+                                replyToToOrFrom, target, range, rangeTwo
+                            );
+                        }
+                    }
+                );
+            }
+            askToOrFromAgain();
+        } else if ((toOrFrom === "to") || (toOrFrom === "from")) {
+            checkSearchTarget();
+        } else {
+            console.log(
+                "AN ERROR OCCURED WHEN CHECKING WHETHER " +
+                "YOU WERE SEARCHING MESSAGES TO YOU, OR MESSAGES FROM YOU." +
+                "\n" +
+                "\n"
+            );
+            quitProgram();
+        }
+    }
+    checkToOrFrom();
+    // console.log("nothing yet!");
+    // decisionTree();
+}
+
+function showCommands(fromHelp) {
+    console.log(
+        "\n" +
+        "COMMUNIQUE RECOGNIZES THE FOLLOWING COMMANDS: " +
+        "\n"
+    );
+    let commandList = [{
+            command: "CHECK",
+            explanation: "CHECK FOR NEW MESSAGES"
+        },
+        {
+            command: "NEWSIG",
+            explanation: "CREATE A NEW SIGNATURE"
+        },
+        {
+            command: "SIG",
+            explanation: "SHOW SIGNATURE"
+        },
+        {
+            command: "MENU",
+            explanation: "GO BACK TO MAIN MENU"
+        },
+        {
+            command: "ABOUT",
+            explanation: "LEARN MORE ABOUT COMMUNIQUE"
+        },
+        {
+            command: "HELP",
+            explanation: "HELP WITH COMMANDS, OTHER ISSUES"
+        },
+        {
+            command: "DATE",
+            explanation: "SET DATE"
+        },
+        {
+            command: "QUIT",
+            explanation: "QUIT PROGRAM"
+        },
+        {
+            command: "CONTACTS",
+            explanation: "SHOW ALL CONTACTS"
+        },
+        {
+            command: "CHAT",
+            explanation: "IN-DEVELOPMENT"
+        },
+        {
+            command: "COMMANDS",
+            explanation: "SHOW A FULL LIST OF COMMANDS"
+        },
+        {
+            command: "AUTOSIG",
+            explanation: "CHOOSE WHETHER TO ADD SIGNATURE AUTOMATICALLY"
+        },
+        {
+            command: "SEARCH",
+            explanation: "SEARCH MESSAGES:" +
+                "\n" +
+                "\t SEARCH ['TO' OR 'FROM'] [RECIPIENT/SENDER OF MESSAGES] " +
+                "[range]" +
+                "\n" +
+                "\t WILL AUTOMATICALLY SHOW LAST FIVE MESSAGES." +
+                "\n" +
+                "\t SEE 'HELP' FOR INFORMATION ON DESIGNATING A SEARCH RANGE." +
+                "\n"
+        },
+        {
+            command: "SET USERNAME",
+            explanation: "SPECIFY USERNAME " +
+                "\n" +
+                "\t YOU MUST HAVE A USERNAME TO USE COMMUNIQUE."
+        }
+    ];
+
+    function listCommandAndExplanation(commandListItem) {
+        console.log(
+            "* " + commandListItem.command +
+            "\n" +
+            "\t" + commandListItem.explanation +
+            "\n"
+        );
+    }
+    commandList.forEach(listCommandAndExplanation);
+    if (fromHelp === "fromHelp") {
+        communiqueHelp();
+    } else {
+        decisionTree();
+    }
+}
+
+function setUsername() {
+    rl.question("WHAT WOULD YOU LIKE YOUR USERNAME TO BE?" +
+        "\n" +
+        "OR, TYPE 'BACK' TO RETURN TO THE MENU. " +
+        "\n" +
+        "(WARNING: FURTHER CHANGES MAY CAUSE ERRORS) ",
+        function (usernameInput) {
+            if (usernameInput.toLowerCase() === "back") {
+                decisionTree();
+            } else {
+                fs.writeFileSync("username.txt", usernameInput);
+                //   THIS IS BECAUSE IT WON'T READ FROM THE FILE UNTIL THE
+                // NEXT TIME THE PROGRAM IS RUN.
+                masterUsername = usernameInput;
+                console.log(
+                    "\n" +
+                    "USERNAME SET AS '" + usernameInput + "'." +
+                    "\n" +
+                    "");
+                decisionTree();
+            }
+        });
+}
+
+function checkForNewMessages() {
+    let newMessages = [];
+    let lastChecked = parseInt(
+        fs.readFileSync("lastChecked.txt", "utf-8")
+    );
+    fs.readdir(messageFolder, (err, files) => {
+
+        let fullPath = "";
+
+        function checkInboxFiles(inboxFile) {
+            let inboxFileLastModified = fs.statSync(fullPath +
+                inboxFile).mtimeMs;
+            if (inboxFileLastModified >= lastChecked) {
+                let messageToShow = fs.readFileSync(
+                    fullPath + inboxFile, "utf-8"
+                );
+                newMessages.push(messageToShow);
+            }
+        }
+
+        function checkForUpdatedFolders(folder) {
+            let otherParty = folder;
+            otherParty = otherParty.replace("_", "");
+            otherParty = otherParty.replace(masterUsername, "");
+            fullPath = messageFolder + folder + "/from_" +
+                otherParty + "/";
+            fs.readdir(fullPath, (err, inboxFiles) => {
+                inboxFiles.forEach(checkInboxFiles);
+            });
+        }
+        files.forEach(checkForUpdatedFolders);
+        setTimeout(function () {
+            if (newMessages.length === 0) {
+                console.log(
+                    "\n" +
+                    "YOU HAVE NO NEW MESSAGES."
+                );
+            } else {
+                let numberOfMessages = "";
+                if (newMessages.length === 1) {
+                    numberOfMessages = "ONE NEW MESSAGE FOUND: ";
+                } else {
+                    numberOfMessages = newMessages.length +
+                    " NEW MESSAGES FOUND: ";
+                }
+                console.log(
+                    "\n" +
+                    "\n" +
+                    numberOfMessages
+                );
+                function printOutAllNewMessages(newMessagesItem) {
+                    console.log(
+                        "\n" +
+                        "********" +
+                        "\n" +
+                        "\n" +
+                        newMessagesItem +
+                        "\n"
+                    );
+                }
+                newMessages.forEach(printOutAllNewMessages);
+                console.log("********");
+            }
+            let currentTime = new Date();
+            currentTime = currentTime.getTime();
+            fs.writeFileSync("lastChecked.txt", currentTime);
+            decisionTree();
+        }, 3000);
+    });
+}
+
+function decisionTree() {
+    rl.question("\n" +
+        "WHAT WOULD YOU LIKE TO DO? ",
+        function (response) {
+            response = response.toLowerCase();
+            switch (true) {
+                case response === "check":
+                    checkForNewMessages();
+                    break;
+                case response === "newsig":
+                    signatureEditor();
+                    break;
+                case response === "sig":
+                    showSignature();
+                    break;
+                case response === "menu":
+                    decisionTree();
+                    break;
+                case response === "about":
+                    aboutCommunique();
+                    break;
+                case response === "help":
+                    communiqueHelp();
+                    break;
+                case response === "quit":
+                    quitProgram();
+                    break;
+                case response === "contacts":
+                    listContacts();
+                    break;
+                case response.slice(0, 4) === "chat":
+                    chat();
+                    break;
+                case response === "commands":
+                    showCommands();
+                    break;
+                case response.slice(0, 6) === "newmsg":
+                    newMessage(response.slice(7));
+                    break;
+                case response.slice(0, 6) === "search":
+                    let sSp = response.split(" ");
+                    searchMessages(sSp[1], sSp[2], sSp[3], sSp[4]);
+                    break;
+                case response === "autosig":
+                    rl.question(
+                        "\n" +
+                        "AUTOMATICALLY ADD SIGNATURE (YES OR NO)? ",
+                        function (yesOrNo) {
+                            addSignature(yesOrNo, "returnToMenu");
+                        }
+                    );
+                    break;
+                case response === "set username":
+                    setUsername();
+                    break;
+                default:
+                    console.log(
+                        "\n" +
+                        "COMMAND NOT RECOGNIZED."
+                    );
+                    decisionTree();
+            }
+        }
+    )
+}
+
+function quitProgram() {
+    console.log(
+        "\n" +
+        "\n" +
+        "QUITTING PROGRAM..."
+    );
+    console.log(
+        "\n" +
+        "THANK YOU FOR USING COMMUNIQUE." + "\n" +
+        "GOODBYE.");
+    setTimeout(function () {
+        process.exit(0);
+    }, 500);
+}
+
+// rl.on("close", function () {
+//     quitProgram();
+// });
