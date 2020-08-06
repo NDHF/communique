@@ -5,13 +5,9 @@
 
 /*
 
-Some things this messaging program could do:
+FINISH RANGE SETTINGS
 
-* Show all new messages at startup 
-* Show new messages as they come in
-* Mute/unmute certain conversations
-* Automatically name text files
-* Move between conversations
+WRITE FUNCTION FOR CHECKING NEW MESSAGES.
 
 */
 
@@ -23,10 +19,67 @@ let rl = readline.createInterface({
     output: process.stdout
 });
 
-function listContacts() {
-    let usrnm4contacts = fs.readFileSync(
-        "username.txt", "utf-8"
+let masterUsername = fs.readFileSync("username.txt", "utf-8");
+
+function setUpUsername() {
+    console.log(
+        "\n" +
+        "WELCOME TO COMMUNIQUE." +
+        "\n" +
+        "\n" +
+        "YOU HAVE NOT SET UP A USERNAME." +
+        "\n" +
+        "\n" +
+        "A USERNAME IS REQUIRED FOR COMMUNIQUE TO WORK PROPERLY." +
+        "\n"
     );
+    rl.question("PLEASE ENTER A USERNAME NOW: ",
+        function (inputForUsername) {
+            if ((inputForUsername === "")) {
+                console.log("USERNAME CANNOT BE BLANK.");
+                setUpUsername();
+            } else if (inputForUsername.includes("_")) {
+                console.log("USERNAME CANNOT INCLUDE AN UNDERSCORE ('_').");
+                setUpUsername();
+            } else {
+                fs.writeFile(
+                    "username.txt", inputForUsername,
+                    function (err) {
+                        if (err) throw err;
+                    }
+                );
+                console.log(
+                    "\n" +
+                    "YOU HAVE SET YOUR USERNAME AS " +
+                    inputForUsername + "." +
+                    "\n" +
+                    "YOU MAY CHANGE IT WITH THE COMMAND 'SET USERNAME', " +
+                    "\n" +
+                    "BUT PLEASE NOTE FUTURE CHANGES MAY IMPAIR " +
+                    "FUNCTIONALITY." +
+                    "\n" +
+                    "BETTER TO CHANGE IT NOW, RATHER THAN LATER. " +
+                    "\n" +
+                    "\n"
+                );
+                rl.question("PRESS 'ENTER' OR 'RETURN' TO RESTART " +
+                    "COMMUNIQUE.",
+                    function (enter) {
+                        startupWelcome();
+                        setTimeout(decisionTree, 1000);
+                    });
+            }
+        });
+}
+
+if (masterUsername === "") {
+    setUpUsername();
+} else {
+    startupWelcome();
+    setTimeout(decisionTree, 1000);
+}
+
+function listContacts() {
     fs.readdir(messageFolder, (err, files) => {
         console.log(
             "\n" +
@@ -35,7 +88,7 @@ function listContacts() {
         );
         files.forEach(function (directory) {
             let justContactName = directory.replace("_", "");
-            justContactName = justContactName.replace(usrnm4contacts, "");
+            justContactName = justContactName.replace(masterUsername, "");
             console.log(justContactName);
         });
         decisionTree();
@@ -46,18 +99,20 @@ function startupWelcome() {
     console.log(
         "\n" +
         "WELCOME TO COMMUNIQUE." +
-        "\n"
-        // "====  ====  |\\ /|  |\\ /|  |  |" +
-        // "\n" +
-        // "||    |  |  | | |  | | |  |  |" +
-        // "\n" +
-        // "||    |  |  | | |  | | |  |  |" +
-        // "\n" +
-        // "====  ====  | | |  | | |  \\_//"
+        "\n" +
+        " ====  ====  =====  =====  |  |  |   |  ===  ====  |  |  === " +
+        "\n" +
+        " ||    |  |  | | |  | | |  |  |  |\\  |   |   |  |  |  |  |   " +
+        "\n" +
+        " ||    |  |  | | |  | | |  |  |  | \\ |   |   |  |  |  |  --- " +
+        "\n" +
+        " ||    |  |  | | |  | | |  |  |  |  \\|   |   | \\|  |  |  |   " +
+        "\n" +
+        " ====  ====  |   |  |   |  ====  |   |  ===  ====  ====  === " +
+        "\n" +
+        "                                                 \\"
     );
 }
-
-startupWelcome();
 
 function aboutCommunique() {
     console.log(
@@ -192,13 +247,10 @@ function showSignature() {
 }
 
 function newMessage(messageRecipient) {
-    let usrnm4msg = fs.readFileSync(
-        "username.txt", "utf-8"
-    );
     fs.readdir(messageFolder, (err, files) => {
         function loopFiles(file, fileIndex) {
             files[fileIndex] = files[fileIndex].replace("_", "");
-            files[fileIndex] = files[fileIndex].replace(usrnm4msg, "");
+            files[fileIndex] = files[fileIndex].replace(masterUsername, "");
         }
         files.forEach(loopFiles);
         if (!files.includes(messageRecipient)) {
@@ -263,19 +315,19 @@ function newMessage(messageRecipient) {
                                     } else if (yesOrNo === "no") {
                                         newMessage(messageRecipient);
                                     } else if (yesOrNo === "yes") {
-                                        let folderName1 = usrnm4msg +
+                                        let folderName1 = masterUsername +
                                             "_" + messageRecipient;
                                         let folderName2 = messageRecipient +
-                                            "_" + usrnm4msg;
+                                            "_" + masterUsername;
                                         let messageDestination = "./" +
                                             "messages/" + folderName1 +
-                                            "/from_" + usrnm4msg + "/";
+                                            "/from_" + masterUsername + "/";
                                         if (
                                             !fs.existsSync(messageDestination)
                                         ) {
                                             messageDestination = "./" +
                                                 "messages/" + folderName2 +
-                                                "/from_" + usrnm4msg + "/";
+                                                "/from_" + masterUsername + "/";
                                         }
                                         let newDate = new Date();
                                         let dateInMs = newDate.getTime();
@@ -308,10 +360,6 @@ function newMessage(messageRecipient) {
 }
 
 function searchMessages(toOrFrom, target, range, rangeTwo) {
-
-    let usrnm4search = fs.readFileSync(
-        "username.txt", "utf-8"
-    );
 
     let folderToSearch = "";
     let subFolderToSearch = "";
@@ -452,7 +500,7 @@ function searchMessages(toOrFrom, target, range, rangeTwo) {
             let listOfContacts = [];
             files.forEach(function (directory) {
                 let cn = directory.replace("_", "");
-                cn = cn.replace(usrnm4search, "");
+                cn = cn.replace(masterUsername, "");
                 listOfContacts.push(cn);
             });
             if (!listOfContacts.includes(target)) {
@@ -609,7 +657,7 @@ function showCommands(fromHelp) {
     }
 }
 
-function setUsername(username) {
+function setUsername() {
     rl.question("WHAT WOULD YOU LIKE YOUR USERNAME TO BE?" +
         "\n" +
         "OR, TYPE 'BACK' TO RETURN TO THE MENU. " +
@@ -620,6 +668,9 @@ function setUsername(username) {
                 decisionTree();
             } else {
                 fs.writeFileSync("username.txt", usernameInput);
+                //   THIS IS BECAUSE IT WON'T READ FROM THE FILE UNTIL THE
+                // NEXT TIME THE PROGRAM IS RUN.
+                masterUsername = usernameInput;
                 console.log(
                     "\n" +
                     "USERNAME SET AS '" + usernameInput + "'." +
@@ -628,6 +679,77 @@ function setUsername(username) {
                 decisionTree();
             }
         });
+}
+
+function checkForNewMessages() {
+    let newMessages = [];
+    let lastChecked = parseInt(
+        fs.readFileSync("lastChecked.txt", "utf-8")
+    );
+    fs.readdir(messageFolder, (err, files) => {
+
+        let fullPath = "";
+
+        function checkInboxFiles(inboxFile) {
+            let inboxFileLastModified = fs.statSync(fullPath +
+                inboxFile).mtimeMs;
+            if (inboxFileLastModified >= lastChecked) {
+                let messageToShow = fs.readFileSync(
+                    fullPath + inboxFile, "utf-8"
+                );
+                newMessages.push(messageToShow);
+            }
+        }
+
+        function checkForUpdatedFolders(folder) {
+            let otherParty = folder;
+            otherParty = otherParty.replace("_", "");
+            otherParty = otherParty.replace(masterUsername, "");
+            fullPath = messageFolder + folder + "/from_" +
+                otherParty + "/";
+            fs.readdir(fullPath, (err, inboxFiles) => {
+                inboxFiles.forEach(checkInboxFiles);
+            });
+        }
+        files.forEach(checkForUpdatedFolders);
+        setTimeout(function () {
+            if (newMessages.length === 0) {
+                console.log(
+                    "\n" +
+                    "YOU HAVE NO NEW MESSAGES."
+                );
+            } else {
+                let numberOfMessages = "";
+                if (newMessages.length === 1) {
+                    numberOfMessages = "ONE NEW MESSAGE FOUND: ";
+                } else {
+                    numberOfMessages = newMessages.length +
+                    " NEW MESSAGES FOUND: ";
+                }
+                console.log(
+                    "\n" +
+                    "\n" +
+                    numberOfMessages
+                );
+                function printOutAllNewMessages(newMessagesItem) {
+                    console.log(
+                        "\n" +
+                        "********" +
+                        "\n" +
+                        "\n" +
+                        newMessagesItem +
+                        "\n"
+                    );
+                }
+                newMessages.forEach(printOutAllNewMessages);
+                console.log("********");
+            }
+            let currentTime = new Date();
+            currentTime = currentTime.getTime();
+            fs.writeFileSync("lastChecked.txt", currentTime);
+            decisionTree();
+        }, 3000);
+    });
 }
 
 function decisionTree() {
@@ -653,9 +775,6 @@ function decisionTree() {
                     break;
                 case response === "help":
                     communiqueHelp();
-                    break;
-                case response === "date":
-                    setDate();
                     break;
                 case response === "quit":
                     quitProgram();
@@ -699,25 +818,7 @@ function decisionTree() {
     )
 }
 
-setTimeout(decisionTree, 1000);
-
-function setDate() {
-
-    let date = Date.now().toString();
-
-    fs.writeFile(
-        "lastChecked.txt", date,
-        function (err) {
-            if (err) throw err;
-        }
-    );
-
-    decisionTree();
-
-}
-
 function quitProgram() {
-    setDate();
     console.log(
         "\n" +
         "\n" +
